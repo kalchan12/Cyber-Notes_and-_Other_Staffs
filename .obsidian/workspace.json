@@ -1,0 +1,182 @@
+{
+  "main": {
+    "id": "5d92f8ecdda5a41e",
+    "type": "split",
+    "children": [
+      {
+        "id": "76cd209ba0683962",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "8b285cc918e52f11",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Capture The Flag (CTF)/Over The Wire/Bandit/Level 0.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Level 0"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "f4fadad14e66d4d1",
+    "type": "split",
+    "children": [
+      {
+        "id": "18684b138f53c220",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c51db723ca7b499b",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "867587999fa8118e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "58a8b3124d7054de",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "9bef94cb48a7d9a5",
+    "type": "split",
+    "children": [
+      {
+        "id": "d80d80e8b25e6163",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d8791141283ea4d7",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Capture The Flag (CTF)/Over The Wire/Bandit/Level 0.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Level 0"
+            }
+          },
+          {
+            "id": "aacdfee758af920e",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Capture The Flag (CTF)/Over The Wire/Bandit/Level 0.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Level 0"
+            }
+          },
+          {
+            "id": "58319bc250be7068",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "ca7c4e43e74825fa",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Capture The Flag (CTF)/Over The Wire/Bandit/Level 0.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Level 0"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false
+    }
+  },
+  "active": "8b285cc918e52f11",
+  "lastOpenFiles": [
+    "assets/Pasted image 20250725083154.png",
+    "Capture The Flag (CTF)/Over The Wire/Bandit/Level 0.md",
+    "assets",
+    "assets/Pasted image 20250725082618.png",
+    "assets/Pasted image 20250725082331.png",
+    "Capture The Flag (CTF)/Over The Wire/Bandit",
+    "Capture The Flag (CTF)/Over The Wire",
+    "Capture The Flag (CTF)"
+  ]
+}
