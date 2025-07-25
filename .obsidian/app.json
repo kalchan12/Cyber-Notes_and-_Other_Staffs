@@ -1,5 +1,6 @@
 {
   "newLinkFormat": "relative",
   "attachmentFolderPath": "assets",
-  "useMarkdownLinks": true
+  "useMarkdownLinks": true,
+  "newFileLocation": "root"
 }
