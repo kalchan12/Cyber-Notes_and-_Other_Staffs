@@ -108,6 +108,13 @@ Visit:
 http://94.237.56.175:49635/?text=${7*7}
 ```
 
+`note` your ip will be different 
+
+
+![](../../assets/Pasted%20image%2020251124083741.png)
+
+
+
 If the page returns:
 
 ```
