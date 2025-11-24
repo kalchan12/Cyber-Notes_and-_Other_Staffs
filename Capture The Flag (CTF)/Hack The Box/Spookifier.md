@@ -1,11 +1,12 @@
 
-
-#  **HTB – Spookifier Write-Up 
+# **HTB – Spookifier Write-Up 
 
 ##  **Challenge Description 
 
 There's a new trend of an application that generates a spooky name for you. Users of that application later discovered that their real names were also magically changed, causing havoc in their life. Could you help bring down this application?
 
+
+Difficulty = Easy
 ---
 # Checking The Website 
 ![](../../assets/Pasted%20image%2020251124081353.png)
@@ -29,7 +30,7 @@ It processes the `text` parameter and calls the `spookify()` function.
 
 # **Understanding the Vulnerability**
 
-### ##  1. How the app handles user input
+ # **1. How the app handles user input**
 
 The route is defined like this:
 
@@ -148,7 +149,7 @@ uid=0(root) gid=0(root) groups=0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10
 
 ---
 
-# 🏁 **Extracting the Flag**
+#  **Extracting the Flag**
 
 Now that RCE works, read `/flag.txt`:
 
@@ -161,7 +162,7 @@ This prints the flag directly on the page.
 ![](../../assets/Pasted%20image%2020251124081948.png)
 ---
 
-#**Final Notes**
+# **Final Notes**
 
 - the fonts aren’t the vulnerability
     
