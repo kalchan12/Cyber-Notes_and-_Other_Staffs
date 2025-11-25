@@ -4,13 +4,13 @@
 
 You've discovered Alex Morgan is connected to RivalTech and has been conducting fake review campaigns against TechFlow. Now you need to map Alex's complete digital footprint across social media platforms to understand the full scope of this operation and find evidence of coordination with other actors.
 
-**Difficulty = Very Easy**
-**Category = OSINT**
+- **Difficulty = Very Easy**
+- **Category = OSINT**
 
 
 ---
 
-# 🕵️‍♂️ HTB: Social Media Investigation Hub — Write-Up
+# HTB: Social Media Investigation Hub — Write-Up
 
 ## 🔍 Overview
 
@@ -44,7 +44,7 @@ Your goal is to dig through all three profiles and answer nine questions to unlo
 
 ---
 
-## 🧠 Step-By-Step Investigation
+## Step-By-Step Investigation
 
 ### **1. Finding the real name**
 
@@ -118,7 +118,7 @@ High karma + low account age = strong signal of boosted visibility.
 
 ---
 
-## 📚 Notes 
+## Notes 
 
 Even though this challenge looked super easy, there were a couple of moments worth noting for the write-up:
 
