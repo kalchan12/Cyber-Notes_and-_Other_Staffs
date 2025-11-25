@@ -12,7 +12,7 @@ You've discovered Alex Morgan is connected to RivalTech and has been conducting 
 
 # HTB: Social Media Investigation Hub — Write-Up
 
-## 🔍 Overview
+## Overview
 
 This challenge is basically a cross-platform OSINT investigation. You’re given a username — **TechReviewer2024** — and you have to correlate data across three fake social networks:
 
