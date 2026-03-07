@@ -6,7 +6,10 @@ we first start by downloading the image by clicking the link.
 
 The first to do in this kinda challenge is to see the metadata of the image. 
 
-![](../../assets/Pasted%20image%2020260307222825.png)we usually use exiftool to see the metadata and it is a solid tool.
+![](../../assets/Pasted%20image%2020260307222825.png)
+
+
+we usually use exiftool to see the metadata and it is a solid tool.
 
 from this metadata the only interesting information is the comment section because it might be encoded text and it looks like base 64 encoding so we can decode using tools like cyberchef https://gchq.github.io/CyberChef/ and there many but i will be using the terminal.
 
@@ -23,4 +26,5 @@ Finally you can run this command `steghide extract -sf img.jpg -p pAzzword` in t
 you will something like this 
 
 ![](../../assets/Pasted%20image%2020260307224240.png)
+
 after that you will just cat the text out then you shall see the flag.
