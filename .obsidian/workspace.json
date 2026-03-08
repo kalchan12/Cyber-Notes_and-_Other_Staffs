@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Capture The Flag (CTF)/Pico CTF/Corrupted file.md",
+                "file": "Capture The Flag (CTF)/Pico CTF/Riddle Registry.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Corrupted file"
+              "title": "Riddle Registry"
             }
           }
         ]
@@ -171,19 +171,21 @@
   },
   "active": "d300c37c4687dcf0",
   "lastOpenFiles": [
-    "Capture The Flag (CTF)/Pico CTF/hashcrack.md",
+    "assets/Screenshot From 2026-03-08 18-53-28.png",
+    "assets/Screenshot From 2026-03-08 18-50-17.png",
+    "assets/Screenshot From 2026-03-08 18-47-17.png",
+    "assets/Screenshot From 2026-03-08 18-42-36.png",
+    "assets/Screenshot From 2026-03-08 18-37-32.png",
+    "assets/Pasted image 20260308213719.png",
     "Capture The Flag (CTF)/Pico CTF/Hidden in plainsight.md",
+    "Capture The Flag (CTF)/Pico CTF/Riddle Registry.md",
     "Capture The Flag (CTF)/Pico CTF/Corrupted file.md",
+    "Capture The Flag (CTF)/Pico CTF/hashcrack.md",
     "assets/Pasted image 20260307231823.png",
     "assets/Pasted image 20260307231518.png",
     "assets/Pasted image 20260307231306.png",
     "assets/Pasted image 20260307230756.png",
     "assets/Pasted image 20260307230404.png",
-    "assets/Pasted image 20260307224240.png",
-    "assets/Pasted image 20260307223912.png",
-    "assets/Pasted image 20260307223401.png",
-    "assets/Pasted image 20260307222825.png",
-    "assets/Pasted image 20260307222453.png",
     "Capture The Flag (CTF)/Pico CTF/FANTASY CTF.md",
     "Capture The Flag (CTF)/Try Hack Me/W1seGuy.md",
     "Capture The Flag (CTF)/Pico CTF",
@@ -214,7 +216,6 @@
     "Capture The Flag (CTF)/Hack The Box/Flag Command.md",
     "Capture The Flag (CTF)/Over The Wire/Bandit/Level 23.md",
     "Capture The Flag (CTF)/Over The Wire/Bandit/Level 22.md",
-    "Capture The Flag (CTF)/Over The Wire/Bandit/Level 21.md",
-    "Capture The Flag (CTF)/Over The Wire/Bandit/Level 20.md"
+    "Capture The Flag (CTF)/Over The Wire/Bandit/Level 21.md"
   ]
 }
