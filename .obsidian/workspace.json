@@ -27,7 +27,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Port-Swigger Module/Server-side vulnerabilities/Server-side vulnerabilities.md",
+                "file": "Port-Swigger Module and labs/Modules(notes)/Server-side vulnerabilities/Server-side vulnerabilities.md",
                 "mode": "source",
                 "source": false
               },
@@ -184,12 +184,14 @@
       "command-palette:Open command palette": false
     }
   },
-  "active": "0764d61b290c6665",
+  "active": "c51db723ca7b499b",
   "lastOpenFiles": [
-    "Port-Swigger Module/Server-side vulnerabilities",
+    "Port-Swigger Module and labs/Labs",
+    "Port-Swigger Module and labs/Modules(notes)",
+    "Port-Swigger Module and labs/Modules(notes)/Server-side vulnerabilities",
     "Exit-Exam notes(CSE)/Computer Networks.md",
-    "Port-Swigger Module/Server-side vulnerabilities/Server-side vulnerabilities.md",
-    "Port-Swigger Module",
+    "Port-Swigger Module and labs/Modules(notes)/Server-side vulnerabilities/Server-side vulnerabilities.md",
+    "Port-Swigger Module and labs",
     "Capture The Flag (CTF)/Pico CTF/Crack The Power.md",
     "Exit-Exam notes(CSE)",
     "assets/Pasted image 20260309160552.png",
@@ -224,8 +226,6 @@
     "My Ethical Hacking Notes/1-Recon/Sublist3r.md",
     "My Ethical Hacking Notes/1-Recon/Gobuster",
     "My Ethical Hacking Notes/1-Recon/WhatWeb",
-    "My Ethical Hacking Notes/1-Recon/Nikito",
-    "My Ethical Hacking Notes/Untitled",
     "My Ethical Hacking Notes/1-Recon/What is Reconnaissance.md",
     "My Ethical Hacking Notes/Untitled.md",
     "Capture The Flag (CTF)/Hack The Box/The Suspicious Domain.md",

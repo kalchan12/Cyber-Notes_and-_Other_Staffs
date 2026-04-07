@@ -1,4 +1,3 @@
-Alright, this is a solid start — you’ve got the right idea, just needs cleanup, better flow, and some “future-you-at-2AM” clarity. I’m gonna rewrite it so it actually _sticks in your brain_.
 
 # Path Traversal
 
