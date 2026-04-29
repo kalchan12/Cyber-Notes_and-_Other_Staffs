@@ -238,3 +238,39 @@ As you can see it returned with the credentials we should not view hence path tr
 ![](../../../assets/Pasted%20image%2020260408112818.png)
 
 As you can see the screen we have solved this lab!
+
+## What is access control?
+
+
+# Access Control
+
+## Overview
+Access control is about determining what actions a user is allowed to perform after they are authenticated.
+
+## Core Concepts
+
+- Authentication → verifies identity (who you are)
+- Session Management → keeps track of the user across multiple HTTP requests
+- Access Control (Authorization) → determines what actions the user can perform
+
+## Important Concept: HTTP is Stateless
+
+- Each request is independent
+- Server does not remember users by default
+
+## Sessions & Subsequent Requests
+
+- After login, server creates a session
+- A session ID is stored in a cookie
+- Every request includes this session ID
+- Server uses it to identify the user
+
+## Security Impact
+
+If session or access control is weak:
+- Session hijacking
+- Unauthorized actions
+- Privilege escalation
+
+## Key Takeaway
+Authentication proves identity, sessions maintain identity, and access control enforces permissions.
