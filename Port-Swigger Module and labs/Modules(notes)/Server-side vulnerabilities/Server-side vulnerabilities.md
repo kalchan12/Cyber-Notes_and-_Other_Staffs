@@ -194,7 +194,7 @@ Same endpoint. Completely different outcome.
 
 
 
-# Lab : File path traversal, simple case
+# Lab 1 : File path traversal, simple case
 
 ![](../../../assets/Pasted%20image%2020260408105902.png)
 
@@ -293,5 +293,27 @@ This shows that any other user can access it and often some other sensitive info
 
 - `robots.txt` are one of the most common place to define what or what not to look on the website when the SEO tries to read or scrap the website. This might be good for website because it stops the SEO(Search Engines optimization) to not look into private data but it never stops humans thou. 
 - Even if there is no information leaked inside the `robots.txt` there will always another option which is brute-force with crafted wordlists. 
+
+
+## Lab 2 : Unprotected admin functionality
+
+![](../../../assets/Pasted%20image%2020260430114806.png)
+
+This Challenge describes that the lab have unprotected admin panel which implies that we can get vertical privilege escalation and perform whatever the admin could, in our case deleting user carlos.
+
+The first thing to do is that to look in `robots.txt` url and as you can see the image down below we found a leak.
+ - `Disallow: /administrator-panel` The Disallow command allows the SEO to not crawl the site but for human user it revealed something it should not be revealing which the admin page and there was role check every user just navigate at that url and go bananas. 
+
+![](../../../assets/Pasted%20image%2020260430115140.png)
+
+- as you can see down below once i navigated to the leaked url that i found in the `robots.txt`, i get to see the actual admin page which should not be possible if it was protected. 
+
+![](../../../assets/Pasted%20image%2020260430115341.png)
+
+- since our challenge was to delete carlos i did that and it worked and solved the challenge as you can see down below.
+
+![](../../../assets/Pasted%20image%2020260430115559.png)
+
+bye bye carlos 
 
 
