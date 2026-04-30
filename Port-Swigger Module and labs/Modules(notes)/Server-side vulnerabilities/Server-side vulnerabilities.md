@@ -363,3 +363,35 @@ since again our goal is to delete carlos again, we had to let go carlos
 
 Moral of the story use proper protection.
 
+
+## Parameter-based access control methods
+
+## Concept
+The application stores user roles or privileges in user-controllable parameters like cookies, URL parameters, or hidden fields, and uses them to make access control decisions.
+
+## How It Works
+1. User logs in normally
+2. Server assigns role (e.g., user/admin)
+3. Role is stored in a client-controllable location
+4. Server trusts this value for authorization decisions
+
+## Example
+https://site.com/home?role=admin
+
+OR
+
+Cookie: role=admin
+
+## Why It's Vulnerable
+- Client-side data can be modified
+- Server incorrectly trusts user-controlled input
+- No server-side verification of privileges
+
+## Attack Method
+- Intercept request
+- Modify role parameter (user → admin)
+- Access restricted functionality
+
+## Key Insight
+Never trust data from the client for authorization decisions.
+
