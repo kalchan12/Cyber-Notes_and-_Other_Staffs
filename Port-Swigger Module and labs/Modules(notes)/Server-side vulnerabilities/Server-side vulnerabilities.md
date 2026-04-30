@@ -338,3 +338,28 @@ var adminPanelTag = document.createElement('a'); adminPanelTag.setAttribute('hre
 ```
 `
 This script adds a link to the user's UI if they are an admin user. However, the script containing the URL is visible to all users regardless of their role.
+
+## Lab 3 : Unprotected admin functionality with unpredictable URL
+
+![](../../../assets/Pasted%20image%2020260430122336.png)
+
+This challenge is basically similar to the previous challenge but instead of leaking the information in the `robots.txt` or have guessable url, this one expose it the frontend or basically we can inspect the page see where the admin page is located. 
+
+![](../../../assets/Pasted%20image%2020260430123041.png)
+
+As you can see down below the code leaked some information.
+first is checks if the user is admin or not and if its it will kinda generate some weird character after `admin-` hence making it hard to brute force or guess. 
+while this is good idea at some degree but hard coding it like this is kinda mid thou coz anyone can see and abuse it.
+
+![](../../../assets/Pasted%20image%2020260430123223.png)
+
+so i found the hardcoded url to the admin page and i pasted it in the url and bam got the admin page.
+
+![](../../../assets/Pasted%20image%2020260430123337.png)
+
+since again our goal is to delete carlos again, we had to let go carlos 
+
+![](../../../assets/Pasted%20image%2020260430123443.png)
+
+Moral of the story use proper protection.
+
