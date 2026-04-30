@@ -274,3 +274,24 @@ If session or access control is weak:
 
 ## Key Takeaway
 Authentication proves identity, sessions maintain identity, and access control enforces permissions.
+
+## What is Vertical privilege escalation
+
+This type of privilege escalation actually occurs when a regular user gains administrative rights hence can you operations like deleting other users accounts and more. 
+
+## Unprotected functionality
+
+in its basic form this type of privilege escalations occur when the application could not enforce protection sensitive functionality like administrative rights.
+
+for example the website might host sensitive data in the following url.
+
+`https://insecure-website.com/admin`
+
+This shows that any other user can access it and often some other sensitive information might be stores this this common url. 
+
+`https://insecure-website.com/robots.txt`
+
+- `robots.txt` are one of the most common place to define what or what not to look on the website when the SEO tries to read or scrap the website. This might be good for website because it stops the SEO(Search Engines optimization) to not look into private data but it never stops humans thou. 
+- Even if there is no information leaked inside the `robots.txt` there will always another option which is brute-force with crafted wordlists. 
+
+
