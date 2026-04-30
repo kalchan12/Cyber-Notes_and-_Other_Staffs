@@ -395,3 +395,43 @@ Cookie: role=admin
 ## Key Insight
 Never trust data from the client for authorization decisions.
 
+## Lab 3 : User role controlled by request parameter
+
+![](../../../assets/Pasted%20image%2020260430133735.png)
+
+This challenge is rather a bit different because it does not involve url guessing and finding where the cookie is stored and changing the parameters but again it is access control problem.
+
+![](../../../assets/Pasted%20image%2020260430134209.png)
+
+we enter the provided credential wiener:peter
+
+![](../../../assets/Pasted%20image%2020260430134324.png)
+
+we will be presented with this interface and our goal is to reveal the admin page by modifying the cookie that decides the roles after login.
+
+![](../../../assets/Pasted%20image%2020260430141628.png)
+
+I am using foxy proxy for this challenge but burp built in browser will work as well.
+we see the request made by the user wiener( highlighted in green). 
+
+When we the request below the `admin=flase` for the user wiener which means that user is not a admin.
+we will send to repeater to modify and the parameter to true.
+
+
+![](../../../assets/Pasted%20image%2020260430140651.png)
+
+- we can use burp or dev tools for this but i am just using both at a time for this challenge to visualize it better.
+- On the left side you see down below in the dev tool i set the cookie for the admin true and refreshed the page and it revealed the admin panel as you can see down below.
+- On the right side i doing the exact same thing in burp. i modified the cookie, i set the admin parameter to be true, as its highlighted in pink on the image. i sent the request and it returned 200 status code, which mean it worked. I searched down below and it showed that i am an admin but since the screen was collapsed it was not possible to show that.
+
+
+![](../../../assets/Pasted%20image%2020260430140805.png)
+
+As you can see highlighted in pink that the admin panel became visible to us. and we get to delete carlos again since the challenge Says we should delete carlos. sup with carlos thou he is being canceled a lot.
+
+![](../../../assets/Pasted%20image%2020260430140849.png)
+
+so just like that we gained the admin panel.
+
+The takeway in this challenge is that we should not verify the roles of any user in the client side since it is visible to anyone with the right tools. we should always implement access control on the server not the client side.
+
