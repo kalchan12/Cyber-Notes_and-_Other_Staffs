@@ -435,3 +435,32 @@ so just like that we gained the admin panel.
 
 The takeway in this challenge is that we should not verify the roles of any user in the client side since it is visible to anyone with the right tools. we should always implement access control on the server not the client side.
 
+
+
+# Horizontal Privilege Escalation
+
+## Definition
+Occurs when a user accesses another user’s data or functionality at the same privilege level.
+
+## Example
+GET /myaccount?id=123 → change to → id=124
+
+## Root Cause
+- Application trusts user-controlled input
+- No verification of resource ownership
+
+## IDOR (Insecure Direct Object Reference)
+- Direct use of user input to access objects
+- No proper access control checks
+
+## Attack Steps
+1. Identify parameter (id, userId, etc.)
+2. Modify value
+3. Observe response
+
+## Non-Predictable IDs
+- Apps may use GUIDs/UUIDs
+- Harder to guess but can be leaked elsewhere
+
+## Key Takeaway
+Always verify that the user is authorized to access the requested resource.
