@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cisco SummerCamp26_Introduction to Cybersecurity/Module 1 Introduction to Cybersecurity/1.5 Cyberwarfare.md",
+                "file": "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.1 Analyzing a Cyber Attack.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "1.5 Cyberwarfare"
+              "title": "2.1 Analyzing a Cyber Attack"
             }
           }
         ],
@@ -56,7 +56,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -93,7 +95,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 200
+    "width": 277.5
   },
   "right": {
     "id": "9bef94cb48a7d9a5",
@@ -186,8 +188,10 @@
   },
   "active": "0764d61b290c6665",
   "lastOpenFiles": [
-    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 1 Introduction to Cybersecurity/1.4 Cyber Attackers.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 1 Introduction to Cybersecurity/1.5 Cyberwarfare.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.1 Analyzing a Cyber Attack.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 1 Introduction to Cybersecurity/1.4 Cyber Attackers.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 1 Introduction to Cybersecurity/1.3 What was Taken.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 1 Introduction to Cybersecurity/Untitled",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 1 Introduction to Cybersecurity/1.2 Organizational Data.md",
@@ -220,9 +224,7 @@
     "Exit-Exam notes(CSE)/Notes/OOP",
     "Exit-Exam notes(CSE)/Notes/Database",
     "Exit-Exam notes(CSE)/Notes",
-    "Exit-Exam notes(CSE)/Bytes/Networking/OSI Model/OSI Model.md",
     "Exit-Exam notes(CSE)/Bytes/Networking/OSI Model",
-    "Exit-Exam notes(CSE)/Bytes/Networking",
     "assets/Pasted image 20260529103823.png",
     "assets/Pasted image 20260529103700.png",
     "assets/Pasted image 20260529103507.png",
