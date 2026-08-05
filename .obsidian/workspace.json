@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cisco SummerCamp26_Introduction to Cybersecurity/Module 4 Cybersecurity Devices and Technologies/4.3 Cisco's Approach to Cybersecurity.md",
+                "file": "Cisco SummerCamp26_Introduction to Cybersecurity/Module 5 Legal and Ethical Issues/5.1 Legal Issues in Cybersecurity.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "4.3 Cisco's Approach to Cybersecurity"
+              "title": "5.1 Legal Issues in Cybersecurity"
             }
           }
         ],
@@ -188,8 +188,10 @@
   },
   "active": "0764d61b290c6665",
   "lastOpenFiles": [
-    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 4 Cybersecurity Devices and Technologies/4.1 Security Appliances.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 4 Cybersecurity Devices and Technologies/4.3 Cisco's Approach to Cybersecurity.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 5 Legal and Ethical Issues/5.1 Legal Issues in Cybersecurity.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 5 Legal and Ethical Issues",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 4 Cybersecurity Devices and Technologies/4.1 Security Appliances.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 4 Cybersecurity Devices and Technologies/4.2 Behavior Approach to Cybersecurity.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.4 Safeguarding your online privacySafe.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 4 Cybersecurity Devices and Technologies",
@@ -223,8 +225,6 @@
     "Exit-Exam notes(CSE)/Notes/OOP/Chapter 5 Exception Handling.md",
     "Exit-Exam notes(CSE)/Notes/OOP/Chapter 4 Packages and Interfaces.md",
     "Exit-Exam notes(CSE)/Notes/OOP/Chapter 3 Inheritance.md",
-    "Exit-Exam notes(CSE)/Notes/OOP/Chapter 2 Java Language Fundamentals.md",
-    "Exit-Exam notes(CSE)/Notes/Operating System",
     "assets/Pasted image 20260529103823.png",
     "assets/Pasted image 20260529103700.png",
     "assets/Pasted image 20260529103507.png",
