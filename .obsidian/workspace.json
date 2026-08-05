@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.4 The Cybersecurity Landscape.md",
+                "file": "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.1 What Do You Think?.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2.4 The Cybersecurity Landscape"
+              "title": "3.1 What Do You Think?"
             }
           }
         ],
@@ -188,10 +188,12 @@
   },
   "active": "0764d61b290c6665",
   "lastOpenFiles": [
-    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.3 Security Vulnerability and Exploits.md",
-    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.4 The Cybersecurity Landscape.md",
-    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.2 Methods of Infiltration.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.1 Analyzing a Cyber Attack.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.1 What Do You Think?.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.4 The Cybersecurity Landscape.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.3 Security Vulnerability and Exploits.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.2 Methods of Infiltration.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/Untitled",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 1 Introduction to Cybersecurity/1.5 Cyberwarfare.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques",
@@ -220,11 +222,9 @@
     "Exit-Exam notes(CSE)/Notes/Database/Chapter 7 Database Recovery Techniques.md",
     "Exit-Exam notes(CSE)/Notes/Database/Chapter 6 Query Processing and Optimization.md",
     "Exit-Exam notes(CSE)/Notes/Database/Chapter 5 Concurrency Control.md",
-    "Exit-Exam notes(CSE)/Notes/Database/Chapter 4 Transaction Management.md",
     "Exit-Exam notes(CSE)/Notes/Operating System",
     "Exit-Exam notes(CSE)/Notes/OOP",
     "Exit-Exam notes(CSE)/Notes/Database",
-    "Exit-Exam notes(CSE)/Notes",
     "assets/Pasted image 20260529103823.png",
     "assets/Pasted image 20260529103700.png",
     "assets/Pasted image 20260529103507.png",
