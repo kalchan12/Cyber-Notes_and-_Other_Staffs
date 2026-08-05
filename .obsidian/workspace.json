@@ -27,12 +27,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.2 What is Encryption ?.md",
+                "file": "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.4 Safeguarding your online privacySafe.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "3.2 What is Encryption ?"
+              "title": "3.4 Safeguarding your online privacySafe"
             }
           }
         ],
@@ -188,8 +188,9 @@
   },
   "active": "0764d61b290c6665",
   "lastOpenFiles": [
-    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.1 What Do You Think?.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.2 What is Encryption ?.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.4 Safeguarding your online privacySafe.md",
+    "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/3.1 What Do You Think?.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 3 Protecting Your Devices and Networking/Untitled",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.1 Analyzing a Cyber Attack.md",
     "Cisco SummerCamp26_Introduction to Cybersecurity/Module 2 Attacks,Concepts and Techniques/2.4 The Cybersecurity Landscape.md",
@@ -222,7 +223,6 @@
     "Exit-Exam notes(CSE)/Notes/OOP/Chapter 1 Introduction to Object-Oriented Programming.md",
     "Exit-Exam notes(CSE)/Notes/Database/Chapter 8 Database Security.md",
     "Exit-Exam notes(CSE)/Notes/Database/Chapter 7 Database Recovery Techniques.md",
-    "Exit-Exam notes(CSE)/Notes/Database/Chapter 6 Query Processing and Optimization.md",
     "Exit-Exam notes(CSE)/Notes/Operating System",
     "Exit-Exam notes(CSE)/Notes/OOP",
     "assets/Pasted image 20260529103823.png",
