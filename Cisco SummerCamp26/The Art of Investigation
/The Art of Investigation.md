@@ -884,3 +884,245 @@ Following a hunch, search for that .bin filename on VirusTotal — the results g
 
 Of course it's possible that the filename is not a hash, but it would be quite a coincidence that a non-malicious filename actually matched a known threat's hash. We are leaning to think we are dealing with a Clop variant here.
 
+## Part 4 — Investigation: Frothly Domain Controller Compromise
+
+### 3.1 Review the Finding
+
+We have a new high-urgency notable event that needs to be addressed. The title of the finding is "**Creation of Shadow Copy**".
+
+**Wait! What's a shadow copy?** It's a snapshot of a volume that duplicates all of the data held on that volume at an instant in time... even if the data is in use!
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/shadowCopy.png)
+
+Expand the event in the Incident Review dashboard of Splunk ES to see more information, like a description of the event, additional fields that are part of the correlation event, the search itself, and contributing events:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/eventDetails.png)
+
+For this notable event, we can see that a volume shadow copy has been created on the host **labrador.froth.ly** (labrador).
+
+#### The Who and What
+
+Before we investigate this finding, let's gather some more information about the **IP address** and the **user** involved with this event. These are often central to investigations and can help gain more context. In Wonderland we use a couple of things in Splunk ES to help us quickly gather information on assets and identities: the **Asset Investigator** and **Identity Investigator**.
+
+**Asset Investigator**, filtered for the IP address **192.168.70.150**:
+
+- Labrador is categorized as an AD (Active Directory) Server — in other words, a **Windows-based domain controller**. It's a high-priority asset.
+- The host is owned by user "peat cerf" (**pcerf**).
+- Other very recent findings for labrador include: **large volume of outbound web traffic**, **remote PowerShell launches**, and **registry autoruns being added**.
+
+**Identity Investigator** on the user pcerf:
+
+- Peat Cerf is a **technical user**, which means he has **elevated privileges**.
+- There is also information about Peat's work location, an email, and a supervisor — all useful when responding to an incident.
+- This user's credentials have been identified in other findings, including one for **excessive failed login attempts**.
+
+The user pcerf is a technical user and the owner of the host involved in the finding. Other findings recently detected: involved in the "Excessive Failed Logins" notable event, executed PowerShell on host labrador, and created shadow copies on host labrador.
+
+Host labrador is a Frothly Brewery Windows Active Directory Domain Controller. Other findings recently detected: large volume of outbound web traffic, creation of shadow copy, remote PowerShell launches, and registry autorun added.
+
+### 3.2 Was It an Incident?
+
+We know that labrador is a high-value target for an attacker. We need to determine if there has been a compromise. We can start by learning more about the processes from our finding: **spoolsv.exe** and its **child process vssadmin.exe**.
+
+**What is spoolsv.exe?** Spoolsv.exe is a core Windows process that runs by default on Microsoft OS. The service spools print jobs and handles interaction with the printer. Spoolsv.exe is located in the C:\Windows\System32 folder and runs automatically when you start a system. On domain controllers, the Print Spooler service is also responsible for printer pruning from Active Directory: this job checks if the print server is reachable and the printer is still shared; if not, it deletes the printQueue object from AD.
+
+**What is vssadmin.exe?** The event that triggered the finding is based on the creation of a volume shadow copy, and that's where vssadmin.exe comes in. Vssadmin.exe is a utility that Microsoft has included on Windows OS since Windows Vista. It provides functionality to list, delete, and resize Shadow Volume Copies. A Shadow Volume Copy is essentially a snapshot, or backup, of your files. This same technology is also used by the Windows' System Restore feature, which helps you roll back Windows to a previously working configuration in case there is a problem. Unfortunately, with the rise of ransomware and other cyber attacks, this tool can be exploited by an attacker.
+
+Look at our **Windows Event logs** for more information about what happened on the host, filtering for **Event Code 1**, which provides extended information about a newly created process. We are looking for anything related to **vssadmin.exe**:
+
+```spl
+index=main sourcetype=xmlwineventlog EventCode=1 dest=labrador process_name=vssadmin.exe
+| table _time user process process_exec parent_process
+| sort _time +
+```
+
+### 3.3 Investigating Suspicious Activity
+
+Since we know the IT department didn't authorize this activity, we'll need to keep investigating. If you recall, another notable event was linked to our user Peat, for excessive logins. It's possible Peat's credentials were compromised.
+
+Let's search for any processes on labrador that involve Peat's credentials and would have spawned from the spoolsv process:
+
+```spl
+| tstats summariesonly=true count from datamodel=Endpoint.Processes where Processes.parent_process_name="spoolsv.exe" Processes.dest="labrador.froth.ly" Processes.user="pcerf" groupby _time span=1s Processes.parent_process Processes.process
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/3_3_interactive.png)
+
+**Following wscript.exe:** the presence of wscript.exe in our results tells us that **Windows Script Host** was used. This provides an environment in which users can execute scripts in various languages to perform tasks. In our case, it looks like commands are being used to perform a variety of nefarious activities involving malicious javascript files.
+
+Do a broad search across our data to see if there are any other instances of Windows Script Host being used to run suspicious processes or functions:
+
+```spl
+| tstats summariesonly=true count from datamodel=Endpoint.Processes where Processes.process_name="wscript.exe" groupby _time span=1s Processes.process Processes.process_name Processes.parent_process Processes.dest Processes.user
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/3_3_interactiveb.png)
+
+### 3.4.a Exploring User "pcerf"
+
+Since the credentials for Peat Cerf, or **pcerf**, have been compromised, let's look at what this user was doing on labrador, the domain controller. Using a saved search crafted to investigate assets and the processes running on them, we noticed a few interesting events:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/3_4_a_otherstuff.png)
+
+**Where did the adversary get in?** Adversaries don't always compromise their target directly. Often, they compromise a point in the network and use this compromised system to move laterally through the network.
+
+Adversaries can "move" laterally by using **remote PowerShell sessions**. Using a remote session, they can do reconnaissance, execute code, or even move tools or stolen data. That's why it is so important to understand the basic artifacts left by remote PowerShell sessions. A good way to look for these sessions is by looking for PowerShell remoting, which is performed using **WinRM services**.
+
+### 3.4.b Exploring with Data Models
+
+#### hefeweizen_tips.js
+
+We want to see if we can learn more about this **hefeweizen_tips.js** file. Start by searching through the **Endpoint data model**, filtering for files that contain "hefeweizen_tips.js" in their name. Maybe we can discover where this weird behavior started:
+
+```spl
+| tstats summariesonly=true count values(Filesystem.file_size) AS file_size from datamodel=Endpoint.Filesystem where Filesystem.file_name="*hefeweizen_tips.js*" groupby _time span=1s Filesystem.file_name Filesystem.file_path
+| drop_dm_object_name("Filesystem")
+| table _time file_name file_path
+| sort + _time
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/Filesystemresults.png)
+
+This information happens to come from **Sysmon Event Code 15**, FileCreateStreamHash, which was identified through the data model and the search above. According to Microsoft's documentation, this event is generated when a named file stream is created, and it generates events that log the **hash** of the contents of the file to which the stream is assigned. There are malware variants that drop their executables or configuration settings via browser downloads, and this type of event is aimed at capturing that, based on the browser attaching a Zone.Identifier "mark of the web" stream.
+
+**Zone.Identifier / the "mark of the web":** the Windows OS keeps track of which files were downloaded from the Internet (or a network share) by tagging them with a hidden NTFS Alternate Data Stream file named Zone.Identifier.
+
+#### So, Where Did the .js File Come From?
+
+So far that Zone.Identifier told us it was downloaded from the web. Let's use the **Web data model** to try and learn more:
+
+```spl
+| from datamodel:"Web"."Web"
+| search (url="*hefeweizen_tips.js*")
+| head 100
+```
+
+This search only returns a handful of events... but look at THIS event:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/3_4b_results.png)
+
+#### A Closer Look at HTTP Headers
+
+When investigating security events, the **HTTP referer header** may be helpful for "walking backward" and getting to the source of compromises:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/3_4_b_HTTP_Header.png)
+
+**What's an HTTP Referer?** The HTTP Referer is used to indicate the URL from which the current request originated. The referral may be due to a user clicking on a hyperlink or submitting a form, for example. They are used because site statistics about where traffic is coming from can be valuable in a variety of business contexts — for example, if a company posted an ad on social media, they would like to see how effective the ad has been in redirecting users to their main website.
+
+**How does it work?** You click a link on a page on "https://websiteA.com", the link directs you to another page or site such as "http://websiteB.com". The HTTP Referer received by website B will have the value for website A, since that is the source of the reference — in other words, that's how you "found" website B.
+
+### 3.5 Adjacent Activities
+
+Let's take a step back and look at the other findings involving this domain controller. We recall an event that involved a lot of web traffic on this host, which concerns us. Searching our findings from the Splunk ES Incident Review Dashboard for anything involving labrador results in several events:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/webactivity.png)
+
+What do you think about our domain controller sending outbound web traffic? The event listed just after the "Creation of a Shadow Copy" finding we looked at earlier involves labrador sending a large amount of web traffic. Outbound web traffic concerns us since someone on this host just **created and deleted a volume shadow copy**... this could be exfiltration.
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/websiteGif.gif)
+
+In the event description, we can see that Peat's user credentials are involved with this finding as well, and we have a destination URL for the web traffic that triggered the finding. We're going to have to check out the destination of all this traffic: **"dunkel-hefeweizen.azureedge.net/index.html"**.
+
+Instead of writing SPL to search for web activity, since we have Splunk ES we can use the **Web Search** from the **Security Domains** tab. Filter for "labrador" as the source — do you remember its IP address? (192.168.70.150). These results should help us determine what this domain controller was doing on the internet:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/DC_gif.gif)
+
+WOW! That's a lot of traffic going to "**dunkel-hefeweizen.azureedge.net**"! It is even at the top of the list for labrador's IP address (192.168.70.150)!
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/lab-websearch.png)
+
+The IP address for this site is **152.195.19.97**, based on the "destination" field. Use the **Web data model** and look in more detail at any traffic between our domain controller and this IP address:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/dunkel_gif.gif)
+
+There is a whole lot of web activity, including a lot of data outbound to this suspicious domain. Why is our asset sending more data out to this site? That's not typical user web browsing traffic!
+
+### 3.6 Gathering More Evidence
+
+#### 3.6.a Exploring DNS
+
+**Who is dunkel-hefeweizen?** We want to learn a little more about this domain, so let's take a look at DNS queries. Use the **dest_ip** field to filter only for DNS responses sent to labrador's IP Address (192.168.70.150). Since we know the IP of the dunkel-hefeweizen.azureedge.net server (152.195.19.97), we can also use it on our search to show only DNS queries that include that IP address in the **answer** field:
+
+```spl
+transaction sourcetype=stream:dns dest_ip="192.168.70.150" answer="152.195.19.97" record_type=A
+| table timestamp hostname{}
+```
+
+Having various hostnames appearing in DNS responses for a single IP can be normal when a target URL is using a Content Delivery Network (CDN) — a geographically distributed group of servers that caches content closer to end users. CDN services continue to grow in popularity, with the majority of today's web traffic being served through them. It appears that we have some CDN provider sites in the DNS responses for "dunkel-hefeweizen" (i.e. scdn*, taucdn.net):
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/DNS-repies.png)
+
+What we have here is a case of the adversary hiding **Command and Control (C2) within web traffic**. Furthermore, their location is concealed because they are using Azure Edge services to mask their malicious domains and activities. This can be done with a technique called **domain fronting**.
+
+**MITRE ATT&CK Technique ID: T1090.004** — read more at the [MITRE ATT&CK website](https://attack.mitre.org/techniques/T1090/004/):
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/MITRE_DomainFronting_NOPRO.png)
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/CDN_network.png)
+
+**How domain fronting works:** adversaries take advantage of the host field in the HTTP 1.1 header and use CDNs to point to different resources — it's just swapping in the attacker's host header. The DNS response and TLS Server Name Indication (SNI) contain one domain. This would be the front domain... or **dunkel-hefeweizen** in our case. Meanwhile, the HTTP header's host address, which is obscured by HTTPS encryption, contains ANOTHER destination. That's where the C2 traffic actually ends up:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/CDN_gif.gif)
+
+This technique is used to disguise the true destination of labrador's messages by rerouting the data through a CDN that would appear otherwise safe.
+
+#### 3.6.b Exploring Network Traffic
+
+Let's take a broader look at events involving labrador, specifically anything destined to the host where the malicious file seems to originate from. If you recall, when we used the Web data model, we found that the **hefeweizen_tips.js** file was downloaded from the IP address **46.101.247.84**.
+
+Use that IP address and part of the filename in the search, then manually narrow our results around the timeframe of our other events:
+
+```spl
+index=main host=labrador dest_ip=46.101.247.84 AND *hefeweizen
+| sort _time
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/3_6_b_reddit__NOPROCESS_.png)
+
+In the first event that appears, the HTTP referer is for a **reddit URL**! This may provide a clue as to how a malicious file was introduced to Frothly's environment. We will need to look into the source IP address of **192.168.70.167**. Perhaps we can find ground zero for this malicious file.
+
+#### Scoping: Research the Host with the Private IP
+
+The Wonderland SOC Engineers have populated a list of assets and identities within ES that we can reference during investigations. Let's see if we can learn something about this device using the **Asset Investigator**. Identifying more information about a device communicating with assets involved in an investigation may be important to scoping the incident:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/whois_167.jpg)
+
+**It looks like a lab workstation may be the source of the infection!**
+
+### 4.0 Wrapping Up: What We Learned
+
+#### Start on the Inside (Frothly Ride-Alongs)
+
+Our first ride-along didn't start with an event. We actually had 3 separate requests from Frothly's team to help them investigate suspicious activity across different systems and locations. What I found interesting about this investigation was that each answer we found was connected — we just had to "zoom out" enough to see those connections.
+
+These short investigations allowed us to work with new sourcetypes and types of events. It probably wasn't as scary as you initially thought. It also helped us recognize how important it is to keep track of the time an event happens, and what else might be happening at that same time from other sources or at other locations. We would have missed that Richard's login activity was strange if it wasn't for that.
+
+In this ride-along, we practiced our critical thinking to:
+
+- Observe, question, and analyze what we were seeing
+- Consider connections that may not have been obvious at the start
+- Interpret findings to decide which paths were worth chasing
+
+#### Cut the Link? (T-Shirt Company)
+
+Our second investigation started with an unknown IP address acting strangely. By the end, we found evidence of credential compromise and malware at the T-shirt company.
+
+For a moment there we thought we had run into a dead end when the attacker disabled all security software and logging on the compromised machine, but we used the Lockheed Martin Cyber Kill Chain and MITRE ATT&CK tactics to think through the problem and find alternative investigation paths. We also got to work with new sourcetypes and understand what they meant by sorting through **interesting fields** and noticing **keywords** and **codes** we could research.
+
+Wearing our critical thinking cap helped us:
+
+- Solve a problem by finding a solution when we don't have the data we expected
+- Consider the consequences of what we were seeing, and alert our team so they could "cut the link" on time
+- Evaluate the information we gathered, understand what it meant, and decide how to move forward
+
+#### Trouble Brewing at Frothly (Domain Controller)
+
+Trouble was definitely brewing at Frothly! This investigation uncovered a compromise, lateral movement, and data exfiltration, all performed by a clever attacker who tried to cover their Command and Control activities with domain fronting. But we were more clever!
+
+We noticed how they leveraged "normal" system applications to launch their own malicious scripts. We also learned how a simple user misstep can lead to an infection and how important it is to collaborate with users during incidents and investigations. Our incident response team worked with Mateo, a Frothly employee. He recognized he had made a mistake by clicking on that link and shared additional information that helped with the investigation and improved Frothly's security policies.
+
+Our trusty critical thinking cap helped us:
+
+- Keep an open and exploring mind to find and follow different leads
+- Identify when we needed help from a colleague to make sure we were on the right track
+- Remember it is OK and normal to stumble across data, logs, or activities we don't understand right away, because we can research them or ask for help
