@@ -434,3 +434,271 @@ The second note is much more useful because another analyst can understand **wha
 - The five investigation questions provide a useful framework: (1) Was this an actual attack? (2) Was the attack successful? (3) What assets were compromised? (4) What activities did the attacker carry out? (5) How should the organization respond?
 - **Good notes are part of good investigation.** They make investigations easier to continue, review, explain, and report.
 
+## Part 2 — Hands-On Investigations: The Ride-Alongs
+
+### Growing the Business (Context)
+
+One of our SOC customers, Frothly Beverages, has been expanding its business and recently purchased two smaller, local beverage companies: Thirsty Berner Brewing, a kombucha brewer, and Yellow Talon, known for their award-winning ginger ale and cream sodas.
+
+With all this growth, Grace Hopper, the CEO of Frothly Beverages, continues to reinvest in the company. They now have badge readers at all their physical locations and VPN connectivity for all their hybrid and remote employees. Splunk ingests and correlates all their data through the Wonderland SOC. Unfortunately, they still face many threats, including possible insider threats.
+
+It is not always easy to distinguish legitimate work activities from insider behavior until the evidence adds up. With all this increased business come more threats. Grace contacted us and requested we assist by investigating the following:
+
+1. Physical security after an inventory revealed missing supplies
+2. Access for remote or hybrid employees after suspected unauthorized access to Frothly's Customer Relationship Management (CRM) platform, SalesForce
+3. Increased alerts about file changes on Frothly workstations
+
+We will be using Splunk Enterprise Version 8.2.2 for these investigations since this is what the analysts at Frothly headquarters are using.
+
+### What is an Insider Threat?
+
+An **Insider Threat** refers to the potential for an individual, process, or system to use their authorized access or understanding of an organization to harm that organization.
+
+An "insider" can be anyone or anything with access and authorization, such as current or former employees, contractors, or even systems and processes.
+
+Insider threats don't always involve malicious intent; they can happen unintentionally through accidents, employee mishaps, or incidents related to unclear or incomplete security policies. **Whether caused by negligence or malice, insider threats should be taken seriously** — they can cause a great deal of damage and be difficult to detect.
+
+#### Insider Threat Indicators
+
+The following are just a few events that, when correlated, could potentially indicate an active insider threat:
+
+- Login variations (increasing frequency, remote/local, odd times, etc.)
+- Logging in frequently during vacation times
+- Email and file transfers of sensitive information
+- Unusual outbound traffic
+- Increased printer usage
+- Export of large reports/downloads from internal systems
+
+For example, if you can connect unusual outbound traffic, large downloads, and sensitive data being sent to an external email, all from the same user and device, there is certainly a chance something bad is happening.
+
+#### Non-Technical Data Sources
+
+Not all data sources may be accessible or available in Splunk, but that doesn't mean they can't provide additional context to an investigation. Non-technical data might be loaded into a local instance of Splunk on an investigator's laptop, for example. Correlating log data with non-technical data, like physical security violations, Acceptable Use Policy (AUP) violations, or credit card expense reports, could provide clues that the logs alone would not.
+
+### Ride Along 1 — Physical Security Audit: Disappearing Supplies
+
+#### The Scenario
+
+After the monthly inventory at the end of July, Frothly's CTO Fyodor Malteskesko reported missing materials from a supply closet to CEO Grace Hopper. Grace requested an audit of the logs from their physical security systems.
+
+We need to review the badge data to determine **which employees are most actively badging** through the supply rooms **during the period when the supplies went missing**, and document any **suspicious access events**.
+
+We use a custom sourcetype named **`st_frothly_events`**, which holds the data from events logged by the badge readers at Frothly's locations.
+
+#### Getting to Know the Data
+
+We can use "interesting fields" in Splunk to get quick snapshots of common values in the fields we are interested in. *Interesting Fields are fields that appear in at least 20% of the events.*
+
+Let's take a look at the fields for **reader_desc** and **event_desc**. Expand each field value to see the values available for these fields.
+
+![](../../assets/Pasted%20image%2020260815134127.png)
+
+![](../../assets/Pasted%20image%2020260815134215.png)
+
+![](../../assets/Pasted%20image%2020260815134552.png)
+
+The general process for these searches — using the stats command with count by, which creates counts of each reader + employee first name + employee job title combination:
+
+```spl
+index=main sourcetype=st_frothly_events reader_desc=THIRSTY*
+| stats count by reader_desc employee_first_name employee_job_title
+```
+
+This shows a count of badge accesses into the areas that include "THIRSTY" in their name:
+
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/1_1_a_ThirstyBadgesFinishe.png)
+
+#### Narrowing the Search
+
+Our search is too broad — we don't need access events for the loading dock or other entrances. We need to narrow it down to the area where the supplies are held:
+
+- Limit the search to just the supply room by changing the **reader description field** from "THIRSTY*" to "THIRSTY_BERNER BREW SUPPLY"
+- Add a filter for only events where the access was granted (**event_desc** set to "Access Granted")
+- Use the timechart command to visualize employees' access to the supply room over the period when the supplies went missing
+
+```spl
+index=main sourcetype=st_frothly_events reader_desc="THIRSTY_BERNER BREW SUPPLY" event_desc="Access Granted" employee_first_name="*"
+| timechart count by employee_first_name limit=10
+```
+
+The **timechart count by** command works like **stats**, but timechart groups the events into buckets of time designated by a time span:
+
+Observations from the visualization:
+
+- Audrey, a brewing assistant, accesses the supply closet regularly.
+- Fyodor, the CTO, has also accessed the closet. He performed the inventory of the supplies and reported the discrepancies, so that's not suspicious.
+- Mateo, the Head Brewer for Frothly, has been accessing it more frequently than everyone else. Maybe nothing, **but it is an anomaly we need to note.**
+- Richard, a Regional Sales Manager, is a hybrid employee and doesn't work in this facility. We don't know why he was in the supply area, so we'll **note this as an anomaly as well.**
+
+#### Failed Access Attempts
+
+Now check for indications of unauthorized access attempts, using an **event_desc** of "Access Denied Unauthorized Entry Level" or "Access Denied Unauthorized Time":
+
+```spl
+index=main sourcetype=st_frothly_events event_desc="Access Denied Unauthorized Entry Level" OR event_desc="Access Denied Unauthorized Time" reader_desc="THIRSTY_BERNER BREW SUPPLY"
+| stats count by reader_desc, employee_first_name employee_job_title
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/1_1_a_unauthorizedAccessFi.png)
+
+Looks like Nathaniel, a new Frothly intern, has been trying to access areas all over the place that he shouldn't be. Maybe honest mistakes by a lost intern, but **something could be going on.**
+
+#### Summary
+
+Physical security data can also be useful for analysts: it is a data source that helps observe behavior. It would be hard to monitor it all the time, so it's always good to consider if any searches used during an investigation can be further refined and turned into alerts later. Operationalizing information like time in and out, location, event type, and the like would facilitate future investigations into unusual behavior.
+
+**Findings:**
+
+1. Mateo accessed the supply room excessively during the period when the inventories were performed.
+2. Richard's badge shows access to the supply room. Richard is a hybrid employee and sales manager not assigned to this location.
+3. Nathaniel, Richard's nephew and new Frothly intern, attempted to access the supply room but failed because his badge was not programmed to access it.
+
+### Ride Along 2 — Chasing Remote Access
+
+#### The Scenario
+
+Frothly Beverages asked us to review the login activity of one of their employees: Richard Schlitzer. Some activities in Salesforce raised questions while Richard was on-site with a customer in Tijuana, Mexico. Richard says he didn't log into SalesForce while he was in Mexico.
+
+We are going to use events from the Checkpoint Firewall VPN and Frothly's SalesForce logins to investigate:
+
+1. Examine data sources for VPN logins by Richard Schlitzer
+2. Use iplocation to see where Richard is logging in from
+3. Use geostats to visualize login data
+4. Correlate data and analyze for anomalies
+
+**Who is Richard Schlitzer?** Richard is a Regional Sales Manager, so he is on the road often and is expected to access the network remotely while traveling to customer sites. When he is not traveling, he spends most of his time in Northern California, near the headquarters office in San Francisco. Unfortunately for Frothly, Richard has had his credentials compromised several times already. We're going to investigate authentication data to help determine if that has happened again.
+
+Start by searching the last week of the Checkpoint firewall events for Richard's VPN logins:
+
+```spl
+index=main sourcetype="cp_log" user=richards
+```
+
+![](../../assets/Pasted%20image%2020260815140358.png)
+
+#### Using iplocation
+
+Use the function **iplocation** to get a geographic location for the source IP addresses the user is logging in from. It's often the easiest way to generate a map from events with associated IP addresses. If you have IP address data in your events, iplocation looks up their location information in a third-party database and generates location fields in the search results: City, Country, Region, latitude, and longitude.
+
+```spl
+index=main sourcetype="cp_log" user="richards"
+| iplocation src
+| where City!=""
+| table src City Region Country lat long _time
+| dedup src
+| sort _time
+```
+
+Using iplocation with the src field where the city is not (!=) empty removes events with an empty city. The search then builds a table and deduplicates logins from the same IP address, and finally sorts the data by time.
+
+![](../../assets/Pasted%20image%2020260815140927.png)
+
+#### What About Salesforce?
+
+This is good information, but the activities in question happened on Salesforce, so we need to include that authentication data to get a complete picture. Use the iplocation command the same way as before, but with a different sourcetype. Since these are different systems, the username is not necessarily the same.
+
+For Salesforce, the sourcetype is **`sfdc_streaming_api_events://login_events`** and the username for Richard is **`richard@yellowtalon.co`**:
+
+```spl
+index=main source="sfdc_streaming_api_events://login_events" Username="richard@yellowtalon.co"
+| iplocation src
+| where City!=""
+| table _time Username SourceIp City
+| dedup _time
+| sort -_time
+```
+
+#### Using geostats
+
+Combine both sources of authentication data and visualize it on a map, showing the location and the frequency of logins from each location. The **geostats** command will help with this, and we can easily turn this data into a map with Splunk's visualizations and count the logins from each city:
+
+```spl
+index=main (sourcetype="cp_log" OR source="sfdc_streaming_api_events:///login_events") (user=Richards OR Username="richard@yellowtalon.com")
+| iplocation src
+| where City!=""
+| geostats count by City latfield=lat longfield=lon
+```
+
+![](../../assets/Pasted%20image%2020260815141155.png)
+
+#### Correlating Data
+
+Visualization is great, but the map didn't tell us anything. Maybe we aren't looking at this the right way. We have two sources of data — let's combine them and look at them in a table:
+
+```spl
+index=main (source="sfdc_streaming_api_events://login_events" OR sourcetype="cp_log") (Username="richard@yellowtalon.co" OR user=richards)
+| eval src=coalesce(src,SourceIp)
+| eval user=coalesce(Username, user)
+| iplocation src
+| eval State=coalesce(Region, Subdivision)
+| where City!=""
+| table _time user src City State Country
+| dedup _time
+| sort -_time
+```
+
+Explanation of the search:
+
+- List both data sources and usernames, just like we did for the geostats visualization. We use **OR and not AND** — if we looked for events with a Salesforce source AND a VPN sourcetype, we wouldn't get any results: they are different data sources.
+- iplocation uses the **src** field from VPN logins. The Salesforce data doesn't have a src field; instead, it has **SourceIp**, so we include SourceIp to make sure we see the location for those events as well.
+- Remove authentication events without **City** populated.
+- Deduplicate anything with the same timestamp, mainly to clean up duplicate VPN data, then sort by newest time first.
+
+![](../../assets/Pasted%20image%2020260815141411.png)
+
+### Ride Along 3 — Alarming File System Activity
+
+#### The Scenario
+
+The IT department at Frothly has been investigating an increase in alerts for abnormal file system activity and they need our help.
+
+The DTEX InTERCEPT agent that Frothly uses provides contextual human activity intelligence and endpoint telemetry for their on-premise assets. In the SOC, we use the DTEX Splunk Add-on from Splunkbase to collect events and alerts from the system.
+
+We were asked to look for **anomalies related to file system changes**, so the investigation starts pretty broad.
+
+#### File Extensions
+
+Add the interesting field **Source_File_Extension** to our selected fields and take a quick look at what type of files DTEX has activity information for. We see plenty of recognizable file extensions such as .pdf or .jpg, but what is the "lockbit" extension? That file extension looks like trouble!
+
+Normally we use **stats** to calculate or aggregate statistics, but here we use it with "values" to list all values in a field. This way we can start by looking at all the VALUES for Activity_Details, after filtering for just file system activity:
+
+```spl
+index=dtex sourcetype=dtex_st_activities Activity_Group=FileSystemActivity Source_File_Extension=lockbit
+| stats values(Activity_Details)
+```
+
+The results are lexicographical: sorted based on the values used to encode the items in computer memory. In Splunk software, this is almost always UTF-8 encoding, which is a superset of ASCII. You can use values() with other commands too, including tstats, chart, and timechart.
+
+Use your internet browser and search engine of your choice to answer the following questions:
+
+1. **Determine what type of malware we are dealing with.**
+2. **(Extra Credit)** What variant(s) of the malware should we suspect here?
+
+After a quick online search, we can confirm that the ".lockbit" extension indicates **LockBit ransomware**, the kind that encrypts data and then asks you to pay for access to the decryption key. It looks like we are dealing with a ransomware infection!
+
+Research shows at least 3 variants of the ransomware:
+
+- **Variant 1** is the original version, which renames files with the ".abcd" extension name. It also includes a ransom note with demands and instructions for alleged restorations in the "Restore-My-Files.txt" file, which has been inserted into every affected folder.
+- **Variant 2** uses a ".LockBit" file extension, giving the malware its moniker; however, it is largely identical to the original version.
+- **Variant 3** of the malware no longer requires users to download the Tor browser in its ransom instructions. Instead, it sends victims to websites via traditional internet access.
+
+**We are dealing with either variant 2 or 3.** We would be able to narrow that down more with access to the ransom instructions.
+
+#### Finding the Affected Hosts
+
+We need to find out what machines are reporting this. There could be multiple hosts impacted, so search for the lockbit extension across all the DTEX data, and use stats and count to determine how many and which hosts may have been infected:
+
+```spl
+index=dtex sourcetype=dtex_st_activities Activity_Group=FileSystemActivity Source_File_Extension=lockbit
+| stats count by Device_Name
+```
+
+Richard Schlitzer's host has been infected with ransomware. We'll need to notify our incident response team and let Frothly know what we have found so appropriate responses can be taken before this spreads.
+
+#### MITRE ATT&CK Technique
+
+Our event description gave us enough clues to make a hypothesis about this finding, but it also had MITRE Techniques [T1110](https://attack.mitre.org/techniques/T1110/) and [T1201](https://attack.mitre.org/techniques/T1201/) mapped to it that can give us additional information about the type of threat that this finding may have uncovered.
+
+MITRE ATT&CK tactics and techniques are configured by our engineers when they develop correlation searches, and they are a great resource for us analysts.
+
