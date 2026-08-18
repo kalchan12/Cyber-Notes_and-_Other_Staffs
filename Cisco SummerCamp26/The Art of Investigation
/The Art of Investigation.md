@@ -702,3 +702,185 @@ Our event description gave us enough clues to make a hypothesis about this findi
 
 MITRE ATT&CK tactics and techniques are configured by our engineers when they develop correlation searches, and they are a great resource for us analysts.
 
+## Part 3 — Investigation: Brute Force at a T-Shirt Company
+
+### 2.1.a Learn About the Source IP
+
+This customer's internal IP addresses are in the 192.168.x.x range. We're not sure why we would see a 172.x IP address in our logs (172.16.16.245). Let's gather more information about this IP and figure out who or what it is.
+
+At this moment we have very little information about this IP address, so use a very general SPL search to see the type of logs (sourcetypes) we have that contain this address. Because we are familiar with the T-shirt company's environment and know they are fairly small with good resources in their Splunk instance, we search through ALL our indexes. If this were a larger or more complex company, it could be safer to target a specific index at a time or shorten our time range to avoid running a resource-intensive search:
+
+```spl
+index=* 172.16.16.245
+| stats count by sourcetype
+```
+
+The results show two sourcetypes that call our attention:
+
+- **WinEventLog:** related to Windows events and usually contains authentication information — we might find the logs that triggered our Brute Force search there.
+- **ftg_event:** a log from the customer's Fortigate firewall — it could give us a clue as to where this IP address is connecting from or what other activities it has attempted.
+
+Let's take a look at the **ftg_event** records for this IP address:
+
+```spl
+index=* 172.16.16.245 sourcetype=fgt_event
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/2.1.a_step3_ftg_NOPROCESS_.png)
+
+Here's a close up of two entries from the ftg_event source that caught our attention:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/2.1.a_step3_ftg_answer_NOP.png)
+
+These logs show the creation and tear-down of an SSL tunnel. 172.16.16.245 was the IP assigned to the tunnel (_tunnel ip), so we assume this is a Virtual Private Network (VPN) client. This connection requires configuration on the client and the customer's firewall, so there has to be a level of trust AND we should be able to learn more about the purpose of this connection. We also see a user "WeSellTshirts" — maybe a partner of the T-shirt company? At least we have enough now to know who to ask.
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/AoI_2.1.a_Maya_Ashley_NOPR.png)
+
+**Summary:** some digging with the rest of our team revealed this is a VPN that allows connectivity to select services for a partner that sells the T-shirt company's product internationally. That doesn't necessarily explain all the failed authentication errors, so let's keep working on this.
+
+### 2.1.b Learn About the Targets
+
+We know that activity related to the IP address 172.16.16.245 triggered a correlation search that looks for Brute Force activity. From the finding, the search is called "Brute Force Access Behavior Detected - 1". That's enough to get us started.
+
+**Learn more about the correlation search:** sometimes it's good to just start at the beginning — look at the search that is already doing the work. This search is relying on the **authentication data model**, which makes it easier to narrow down our search.
+
+**Wide search:** since we have an IP address, we could do a wide search just for the IP and start narrowing down from there:
+
+```spl
+index=* 172.16.16.245
+```
+
+But what if it returns too many results, or takes too long? We may also need to avoid running a very open search in a large environment or in one with limited resources. **Always keep in mind how a resource-intensive search could impact the environment.** In this case, we have more information to narrow down our search, so let's do that.
+
+**Narrow down our search:** since we know the logs we are looking for were added to the authentication data model, we can use the "authentication" tag to limit our search. It's also useful to begin by looking at the sourcetypes available to more easily decide where to go next:
+
+```spl
+index=* tag=authentication 172.16.16.245
+| stats count by sourcetype, source
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/AoI_1.2.b._sourcetypes_NOP.png)
+
+From the results above, the Security WinEventLog has the data we are looking for. Windows logs are very common and as analysts we eventually get very familiar with them. But if you are not familiar with a log you are reviewing, looking at the **interesting fields** can be a really helpful way to orient yourself:
+
+```spl
+index=* 172.16.16.245 sourcetype=WinEventLog
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/AoI_2.1.b_Targerts_NOPROCE.png)
+
+Just by looking at the interesting fields we were able to quickly identify our potential targets. Most seem like user devices, but that **Main-Inv** one could be important!
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/PTPtHR/AoI_2.1.b_Targerts_NOPROCE.png)
+
+So we found a few devices that were targeted by that 172.16.16.245 IP address:
+
+- DBell
+- PPark
+- JSam
+- Main-Inv
+
+That's a very high number of events in a short period of time.
+
+### 2.2 Was the Attack Successful?
+
+- Suspicious activity triggered our "Brute Force Activity Detected" rule, which is tied to Credential Access and Discovery MITRE ATT&CK tactics.
+- The source IP of this activity (172.16.16.245) is from a user connecting through a VPN that is reserved for a partner that helps with the company's international sales.
+- This IP has hundreds of failed authentication attempts against at least 4 different devices, one of which seems to be a corporate server (Main-Inv).
+- There were at least 2 "successfully logged in" messages in the records.
+
+Our initial review of the logs indicates that our alert **did** catch a brute force attack happening.
+
+### 2.2.a Which Assets Were Compromised?
+
+While identifying our targets, we found that the logs that triggered the Brute Force alert are part of a Windows Security Audit log. Observe two events from this log and see what important information you can identify:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/AoI_2.2a_Event1_1.png)
+
+Event #1 — Part 1 of 2
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/AoI_2.2a_Event1_2_NOPROCES.png)
+
+Event #1 — Part 2 of 2
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/AoI_2.2a_Event2_1_NOPROCES.png)
+
+Event #2 — Part 1 of 2
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/AoI_2.2a_Event2_2_NOPROCES.png)
+
+Event #2 — Part 2 of 2
+
+Now that we know the EventCode for a successful login (**4624**), we can use it to narrow down our search and see the devices (hosts) in which authentication succeeded from our suspicious IP (172.16.16.245):
+
+```spl
+index=* 172.16.16.245 sourcetype=WinEventLog "EventCode=4624"
+```
+
+There are 2 devices (hosts) in which authentication succeeded from the suspicious IP. Review the **Assets and Identity** information populated by our engineers to learn about the compromised devices.
+
+### 2.2.b What Activities Did the Attacker Carry Out?
+
+**Uh-oh, we have a problem!** We were looking for additional Windows logs for the **Main-Inv** asset and there are no records after the successful authentication message we saw. It also seems like other Endpoint Detection and Response tools have been stopped. We don't have records from that machine after the attacker was able to crack the password.
+
+How should we continue our investigation? When stuck or unsure of where to go next, rely on existing frameworks to help think through a problem:
+
+- [Lockheed Martin Cyber Kill Chain](https://www.lockheedmartin.com/en-us/capabilities/cyber/cyber-kill-chain.html)
+- [MITRE ATT&CK Enterprise Matrix](https://attack.mitre.org/tactics/enterprise/)
+
+**Cyber Kill Chain:** with the information we have, we can assume the attacker already completed or even skipped the **Reconnaissance** stage — they knew which assets to target and were successful at gaining access by **exploiting** a VPN service with a partner and potentially weak or reused passwords. Their next steps will be related to taking **action**, maybe **installing malware** or **getting data out**. They probably expected their VPN link to be temporary, so they would need another way of keeping communication with the compromised assets — there could be **command and control (C2)** communication in the network.
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/THE-CYBER-KILL-CHAIN-_NOPR.png)
+
+**MITRE ATT&CK Enterprise Matrix** helps go deeper. Looking at the tactics:
+
+- The attacker has done some level of **Reconnaissance**.
+- Our initial alert hinted at **Credential Access** and **Discovery**, all leading to **Initial Access** to our assets.
+- They started **Defense Evasion** because our local logs and antivirus protection are gone.
+- They probably already attempted **Privilege Escalation** and **Persistence**, but it will be hard to see that without the missing logs.
+- However, we should be able to see attempts at **Lateral Movement**, **Command and Control**, and **Exfiltration** if any.
+
+Let's focus our search on those last 3:
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/MITRE_ATTACK_ENTERPRISE_NO.png)
+
+#### The Main-Inv Asset
+
+We learned that the Main-Inv asset is a server that holds important inventory and financial information. This is a high-risk server and therefore has strict rules about communication.
+
+It **does** have limited internet access related to system updates, so we will start with the **stream:http** sourcetype to see if there's anything out of the ordinary. We know the index and both the IP address and the device name; we include both the IP and the device name in our search to ensure we get all the relevant traffic:
+
+```spl
+index=bta-ts sourcetype="stream:http" (host=Main-inv OR src_ip=192.168.55.3)
+```
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/Screenshot%202024-03-27%20.png)
+
+We see over 1000 results; let's see how we can make them more manageable by looking at the **interesting fields** first:
+
+- We have 11 **destination** IPs; it wouldn't be too hard to check them all out, but there is an **action** field that could help narrow our data down. Looking at **blocked** data can be helpful to understand an attacker's intent, but right now we are interested in **allowed** traffic to see if anything malicious happened. Adding **action=allowed** lowers our total numbers to 783 and 9 destination IPs.
+- The **http_method** can also be helpful to filter between downloads (**GET**) or uploads (**POST**).
+- **HTTP User Agents** related to Microsoft are expected, not so sure about Mozilla, but let's keep looking.
+- 20 **uris/urls** in our filtered logs; many times these won't give away too much, but we do see a .bin (binary) file in one of them. We wonder what that is.
+
+#### Downloading a Binary?
+
+Looking at the events related to the URL we spotted earlier, it seems like we are on the right path. A PowerShell call within our HTTP stream makes alarm bells ring, especially given the **-e switch** that appears — short for the "EncodedCommand" switch, which attackers frequently use to hide their activities.
+
+We can see this is part of a successful (HTTP 200 OK) GET request of a file called `d0cde86d47219e9c56b717f55dcdb01b0566344c13aa671613598cab427345b9.bin`. Does that look like a hash to you as well? We now have a destination IP address (13.107.4.50); let's see if there's any threat intelligence on that:
+
+- **AlienVault OTX** does have some information about this IP: it has appeared in AV detections and is associated with Malware and Trojans.
+- **VirusTotal** also has it flagged by a few security vendors.
+
+#### Decoding with CyberChef
+
+PowerShell encoded commands can usually be decoded with publicly available tools. Using [CyberChef](https://gchq.github.io/CyberChef/), copy the encoded stream and add "**From Base64**" to the recipe. Within the output we can see another "FromBase64String" entry, so pull that out into a separate CyberChef window. The "From Base64" ingredient turned out a lot of random characters, but after a couple tries the "Detect File Type" ingredient identified it as a **gzip file**. This is not looking good.
+
+#### More Intelligence
+
+Following a hunch, search for that .bin filename on VirusTotal — the results give more and more indication that we are dealing with Malware. The "popular threat label" field points to **Clop**, which is a file-encrypting virus used for Ransomware.
+
+![](https://www.netacad.com/scorm-content/ff9e491c-49be-4734-803e-a79e6e83dab1/4090b743-8a46-4f77-b4ca-bcbd663935c6/en-US/02a0a0d2-e97c-45db-b190-9df0959adb06/scormcontent/assets/Aoi_2.2.b._VT_Clop_NOPROCE.png)
+
+Of course it's possible that the filename is not a hash, but it would be quite a coincidence that a non-malicious filename actually matched a known threat's hash. We are leaning to think we are dealing with a Clop variant here.
+
